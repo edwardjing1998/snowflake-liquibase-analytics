@@ -1,0 +1,78 @@
+name: Release Snowflake Liquibase Lock
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: "Enter RELEASE to confirm no Liquibase deployment is running"
+        required: true
+        type: string
+
+concurrency:
+  group: snowflake-analytics-staging
+  cancel-in-progress: false
+
+jobs:
+  release-lock:
+    runs-on: ubuntu-latest
+    environment: snowflake-staging
+
+    permissions:
+      contents: read
+
+    env:
+      SNOWFLAKE_ACCOUNT: ${{ vars.SNOWFLAKE_ACCOUNT }}
+      SNOWFLAKE_DATABASE: ${{ vars.SNOWFLAKE_DATABASE }}
+      SNOWFLAKE_WAREHOUSE: ${{ vars.SNOWFLAKE_WAREHOUSE }}
+      SNOWFLAKE_ROLE: ${{ vars.SNOWFLAKE_ROLE }}
+      SNOWFLAKE_CHANGELOG_SCHEMA: ${{ vars.SNOWFLAKE_CHANGELOG_SCHEMA }}
+      SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER }}
+      SNOWFLAKE_PASSWORD: ${{ secrets.SNOWFLAKE_PASSWORD }}
+
+    steps:
+      - name: Confirm lock release
+        shell: bash
+        run: |
+          if [ "${{ inputs.confirmation }}" != "RELEASE" ]; then
+            echo "Confirmation must be RELEASE"
+            exit 1
+          fi
+
+      - name: Check out source
+        uses: actions/checkout@v5
+
+      - name: Set up Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+
+      - name: Verify Snowflake configuration
+        shell: bash
+        run: |
+          echo "Database=$SNOWFLAKE_DATABASE"
+          echo "Schema=$SNOWFLAKE_CHANGELOG_SCHEMA"
+          echo "Warehouse=$SNOWFLAKE_WAREHOUSE"
+          echo "Role=$SNOWFLAKE_ROLE"
+
+          test "$SNOWFLAKE_DATABASE" = "EDU_AI_APP"
+          test "$SNOWFLAKE_CHANGELOG_SCHEMA" = "WEBAPP"
+          test "$SNOWFLAKE_WAREHOUSE" = "GLOBAL_FINANCE_WAREHOUSE"
+
+      - name: Release Liquibase lock
+        run: |
+          mvn --batch-mode liquibase:releaseLocks \
+            -Dliquibase.defaultCatalogName="$SNOWFLAKE_DATABASE" \
+            -Dliquibase.defaultSchemaName="$SNOWFLAKE_CHANGELOG_SCHEMA" \
+            -Dliquibase.changelogCatalogName="$SNOWFLAKE_DATABASE" \
+            -Dliquibase.changelogSchemaName="$SNOWFLAKE_CHANGELOG_SCHEMA"
+
+      - name: Display Liquibase status
+        run: |
+          mvn --batch-mode liquibase:status \
+            -Dliquibase.defaultCatalogName="$SNOWFLAKE_DATABASE" \
+            -Dliquibase.defaultSchemaName="$SNOWFLAKE_CHANGELOG_SCHEMA" \
+            -Dliquibase.changelogCatalogName="$SNOWFLAKE_DATABASE" \
+            -Dliquibase.changelogSchemaName="$SNOWFLAKE_CHANGELOG_SCHEMA" \
+            -Dliquibase.verbose=true
