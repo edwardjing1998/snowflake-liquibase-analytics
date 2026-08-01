@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="005-01-create-data-load-audit" author="edward">
+        <createTable catalogName="${databaseName}" schemaName="AUDIT" tableName="DATA_LOAD_AUDIT">
+            <column name="LOAD_BATCH_ID" type="VARCHAR(100)"><constraints primaryKey="true" primaryKeyName="PK_DATA_LOAD_AUDIT" nullable="false"/></column>
+            <column name="PIPELINE_NAME" type="VARCHAR(200)"/>
+            <column name="SOURCE_SYSTEM" type="VARCHAR(100)"/>
+            <column name="TARGET_TABLE" type="VARCHAR(500)"/>
+            <column name="STARTED_AT" type="TIMESTAMP_NTZ"/>
+            <column name="COMPLETED_AT" type="TIMESTAMP_NTZ"/>
+            <column name="SOURCE_RECORD_COUNT" type="NUMBER"/>
+            <column name="INSERTED_RECORD_COUNT" type="NUMBER"/>
+            <column name="UPDATED_RECORD_COUNT" type="NUMBER"/>
+            <column name="REJECTED_RECORD_COUNT" type="NUMBER"/>
+            <column name="LOAD_STATUS" type="VARCHAR(50)"/>
+            <column name="ERROR_MESSAGE" type="VARCHAR"/>
+        </createTable>
+        <rollback><dropTable catalogName="${databaseName}" schemaName="AUDIT" tableName="DATA_LOAD_AUDIT"/></rollback>
+    </changeSet>
+</databaseChangeLog>

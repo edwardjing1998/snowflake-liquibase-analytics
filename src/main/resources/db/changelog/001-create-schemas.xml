@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="001-01-create-staging-schema" author="edward">
+        <preConditions onFail="HALT"><dbms type="snowflake"/></preConditions>
+        <sql>CREATE SCHEMA IF NOT EXISTS ${databaseName}.STAGING</sql>
+        <rollback><sql>DROP SCHEMA IF EXISTS ${databaseName}.STAGING</sql></rollback>
+    </changeSet>
+
+    <changeSet id="001-02-create-core-schema" author="edward">
+        <preConditions onFail="HALT"><dbms type="snowflake"/></preConditions>
+        <sql>CREATE SCHEMA IF NOT EXISTS ${databaseName}.CORE</sql>
+        <rollback><sql>DROP SCHEMA IF EXISTS ${databaseName}.CORE</sql></rollback>
+    </changeSet>
+
+    <changeSet id="001-03-create-mart-schema" author="edward">
+        <preConditions onFail="HALT"><dbms type="snowflake"/></preConditions>
+        <sql>CREATE SCHEMA IF NOT EXISTS ${databaseName}.MART</sql>
+        <rollback><sql>DROP SCHEMA IF EXISTS ${databaseName}.MART</sql></rollback>
+    </changeSet>
+
+    <changeSet id="001-04-create-audit-schema" author="edward">
+        <preConditions onFail="HALT"><dbms type="snowflake"/></preConditions>
+        <sql>CREATE SCHEMA IF NOT EXISTS ${databaseName}.AUDIT</sql>
+        <rollback><sql>DROP SCHEMA IF EXISTS ${databaseName}.AUDIT</sql></rollback>
+    </changeSet>
+</databaseChangeLog>

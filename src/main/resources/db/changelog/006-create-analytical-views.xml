@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="006-01-create-roaming-adjustment-summary" author="edward" runOnChange="true">
+        <sql><![CDATA[
+            CREATE OR REPLACE VIEW ${databaseName}.MART.V_ROAMING_ADJUSTMENT_SUMMARY AS
+            SELECT
+                BILL.BILLING_CYCLE_START,
+                BILL.CURRENCY_CODE,
+                COUNT(DISTINCT BILL.BILL_LINE_ID) AS ROAMING_CHARGE_COUNT,
+                SUM(BILL.NET_AMOUNT) AS ROAMING_CHARGE_AMOUNT,
+                COUNT(DISTINCT ADJUSTMENT.ADJUSTMENT_ID) AS ADJUSTMENT_COUNT,
+                COALESCE(SUM(ADJUSTMENT.ADJUSTMENT_AMOUNT), 0) AS ADJUSTMENT_AMOUNT
+            FROM ${databaseName}.CORE.FACT_BILL_LINE BILL
+            LEFT JOIN ${databaseName}.CORE.FACT_ADJUSTMENT ADJUSTMENT
+                ON BILL.BILL_LINE_ID = ADJUSTMENT.BILL_LINE_ID
+            WHERE BILL.CHARGE_TYPE_CODE = 'ROAMING'
+            GROUP BY BILL.BILLING_CYCLE_START, BILL.CURRENCY_CODE
+        ]]></sql>
+        <rollback><sql>DROP VIEW IF EXISTS ${databaseName}.MART.V_ROAMING_ADJUSTMENT_SUMMARY</sql></rollback>
+    </changeSet>
+</databaseChangeLog>

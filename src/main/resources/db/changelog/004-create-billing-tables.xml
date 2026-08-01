@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="004-01-create-dim-billing-cycle" author="edward">
+        <createTable catalogName="${databaseName}" schemaName="CORE" tableName="DIM_BILLING_CYCLE">
+            <column name="BILLING_CYCLE_SK" type="NUMBER" autoIncrement="true">
+                <constraints primaryKey="true" primaryKeyName="PK_DIM_BILLING_CYCLE" nullable="false"/>
+            </column>
+            <column name="BILLING_CYCLE_ID" type="VARCHAR(100)"><constraints nullable="false"/></column>
+            <column name="CYCLE_START_DATE" type="DATE"><constraints nullable="false"/></column>
+            <column name="CYCLE_END_DATE" type="DATE"><constraints nullable="false"/></column>
+            <column name="DUE_DATE" type="DATE"/>
+            <column name="STATUS" type="VARCHAR(50)"/>
+            <column name="CREATED_AT" type="TIMESTAMP_NTZ" defaultValueComputed="CURRENT_TIMESTAMP()"/>
+        </createTable>
+        <addUniqueConstraint catalogName="${databaseName}" schemaName="CORE" tableName="DIM_BILLING_CYCLE"
+                             columnNames="BILLING_CYCLE_ID" constraintName="UK_DIM_BILLING_CYCLE_ID"/>
+        <rollback><dropTable catalogName="${databaseName}" schemaName="CORE" tableName="DIM_BILLING_CYCLE"/></rollback>
+    </changeSet>
+
+    <changeSet id="004-02-create-fact-bill" author="edward">
+        <createTable catalogName="${databaseName}" schemaName="CORE" tableName="FACT_BILL">
+            <column name="BILL_ID" type="VARCHAR(100)"><constraints primaryKey="true" primaryKeyName="PK_FACT_BILL" nullable="false"/></column>
+            <column name="BILLING_ACCOUNT_TOKEN" type="VARCHAR(256)"><constraints nullable="false"/></column>
+            <column name="BILLING_CYCLE_ID" type="VARCHAR(100)"/>
+            <column name="BILL_DATE" type="DATE"/>
+            <column name="DUE_DATE" type="DATE"/>
+            <column name="PREVIOUS_BALANCE" type="NUMBER(18,2)"/>
+            <column name="TOTAL_CHARGES" type="NUMBER(18,2)"/>
+            <column name="TOTAL_TAX" type="NUMBER(18,2)"/>
+            <column name="TOTAL_CREDITS" type="NUMBER(18,2)"/>
+            <column name="AMOUNT_DUE" type="NUMBER(18,2)"/>
+            <column name="CURRENCY_CODE" type="VARCHAR(3)"/>
+            <column name="BILL_STATUS" type="VARCHAR(50)"/>
+            <column name="SOURCE_SYSTEM" type="VARCHAR(100)"/>
+            <column name="SOURCE_UPDATED_AT" type="TIMESTAMP_NTZ"/>
+            <column name="LOAD_BATCH_ID" type="VARCHAR(100)"/>
+            <column name="CREATED_AT" type="TIMESTAMP_NTZ" defaultValueComputed="CURRENT_TIMESTAMP()"/>
+            <column name="UPDATED_AT" type="TIMESTAMP_NTZ" defaultValueComputed="CURRENT_TIMESTAMP()"/>
+        </createTable>
+        <rollback><dropTable catalogName="${databaseName}" schemaName="CORE" tableName="FACT_BILL"/></rollback>
+    </changeSet>
+
+    <changeSet id="004-03-create-fact-bill-line" author="edward">
+        <createTable catalogName="${databaseName}" schemaName="CORE" tableName="FACT_BILL_LINE">
+            <column name="BILL_LINE_ID" type="VARCHAR(100)"><constraints primaryKey="true" primaryKeyName="PK_FACT_BILL_LINE" nullable="false"/></column>
+            <column name="BILL_ID" type="VARCHAR(100)"><constraints nullable="false"/></column>
+            <column name="BILLING_ACCOUNT_TOKEN" type="VARCHAR(256)"><constraints nullable="false"/></column>
+            <column name="PRODUCT_ID" type="VARCHAR(100)"/>
+            <column name="SERVICE_ID" type="VARCHAR(100)"/>
+            <column name="CHARGE_TYPE_CODE" type="VARCHAR(100)"/>
+            <column name="BILLING_CYCLE_START" type="DATE"/>
+            <column name="BILLING_CYCLE_END" type="DATE"/>
+            <column name="CHARGE_DATE" type="DATE"/>
+            <column name="QUANTITY" type="NUMBER(18,4)"/>
+            <column name="UNIT_PRICE" type="NUMBER(18,4)"/>
+            <column name="CHARGE_AMOUNT" type="NUMBER(18,2)"/>
+            <column name="TAX_AMOUNT" type="NUMBER(18,2)"/>
+            <column name="CREDIT_AMOUNT" type="NUMBER(18,2)"/>
+            <column name="NET_AMOUNT" type="NUMBER(18,2)"/>
+            <column name="CURRENCY_CODE" type="VARCHAR(3)"/>
+            <column name="CHARGE_STATUS" type="VARCHAR(50)"/>
+            <column name="SOURCE_SYSTEM" type="VARCHAR(100)"/>
+            <column name="SOURCE_UPDATED_AT" type="TIMESTAMP_NTZ"/>
+            <column name="LOAD_BATCH_ID" type="VARCHAR(100)"/>
+            <column name="CREATED_AT" type="TIMESTAMP_NTZ" defaultValueComputed="CURRENT_TIMESTAMP()"/>
+            <column name="UPDATED_AT" type="TIMESTAMP_NTZ" defaultValueComputed="CURRENT_TIMESTAMP()"/>
+        </createTable>
+        <rollback><dropTable catalogName="${databaseName}" schemaName="CORE" tableName="FACT_BILL_LINE"/></rollback>
+    </changeSet>
+
+    <changeSet id="004-04-create-fact-payment" author="edward">
+        <createTable catalogName="${databaseName}" schemaName="CORE" tableName="FACT_PAYMENT">
+            <column name="PAYMENT_ID" type="VARCHAR(100)"><constraints primaryKey="true" primaryKeyName="PK_FACT_PAYMENT" nullable="false"/></column>
+            <column name="BILL_ID" type="VARCHAR(100)"/>
+            <column name="BILLING_ACCOUNT_TOKEN" type="VARCHAR(256)"><constraints nullable="false"/></column>
+            <column name="PAYMENT_DATE" type="TIMESTAMP_NTZ"/>
+            <column name="PAYMENT_AMOUNT" type="NUMBER(18,2)"/>
+            <column name="CURRENCY_CODE" type="VARCHAR(3)"/>
+            <column name="PAYMENT_METHOD_TYPE" type="VARCHAR(50)"/>
+            <column name="PAYMENT_STATUS" type="VARCHAR(50)"/>
+            <column name="SOURCE_SYSTEM" type="VARCHAR(100)"/>
+            <column name="LOAD_BATCH_ID" type="VARCHAR(100)"/>
+            <column name="CREATED_AT" type="TIMESTAMP_NTZ" defaultValueComputed="CURRENT_TIMESTAMP()"/>
+        </createTable>
+        <rollback><dropTable catalogName="${databaseName}" schemaName="CORE" tableName="FACT_PAYMENT"/></rollback>
+    </changeSet>
+
+    <changeSet id="004-05-create-fact-adjustment" author="edward">
+        <createTable catalogName="${databaseName}" schemaName="CORE" tableName="FACT_ADJUSTMENT">
+            <column name="ADJUSTMENT_ID" type="VARCHAR(100)"><constraints primaryKey="true" primaryKeyName="PK_FACT_ADJUSTMENT" nullable="false"/></column>
+            <column name="BILL_LINE_ID" type="VARCHAR(100)"/>
+            <column name="BILLING_ACCOUNT_TOKEN" type="VARCHAR(256)"><constraints nullable="false"/></column>
+            <column name="POLICY_ID" type="VARCHAR(100)"/>
+            <column name="ADJUSTMENT_TYPE" type="VARCHAR(100)"/>
+            <column name="REASON_CODE" type="VARCHAR(100)"/>
+            <column name="ADJUSTMENT_AMOUNT" type="NUMBER(18,2)"/>
+            <column name="CURRENCY_CODE" type="VARCHAR(3)"/>
+            <column name="REQUESTED_AT" type="TIMESTAMP_NTZ"/>
+            <column name="APPROVED_AT" type="TIMESTAMP_NTZ"/>
+            <column name="ADJUSTMENT_STATUS" type="VARCHAR(50)"/>
+            <column name="SOURCE_SYSTEM" type="VARCHAR(100)"/>
+            <column name="LOAD_BATCH_ID" type="VARCHAR(100)"/>
+            <column name="CREATED_AT" type="TIMESTAMP_NTZ" defaultValueComputed="CURRENT_TIMESTAMP()"/>
+            <column name="UPDATED_AT" type="TIMESTAMP_NTZ" defaultValueComputed="CURRENT_TIMESTAMP()"/>
+        </createTable>
+        <rollback><dropTable catalogName="${databaseName}" schemaName="CORE" tableName="FACT_ADJUSTMENT"/></rollback>
+    </changeSet>
+</databaseChangeLog>

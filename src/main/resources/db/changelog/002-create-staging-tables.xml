@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="002-01-create-stg-policy" author="edward">
+        <sql><![CDATA[
+            CREATE TRANSIENT TABLE IF NOT EXISTS ${databaseName}.STAGING.STG_POLICY (
+                POLICY_ID VARCHAR(100) NOT NULL,
+                POLICY_VERSION NUMBER NOT NULL,
+                POLICY_NAME VARCHAR(500),
+                POLICY_TYPE VARCHAR(100),
+                CATEGORY VARCHAR(100),
+                STATUS VARCHAR(50),
+                POLICY_SUMMARY VARCHAR,
+                POLICY_TEXT VARCHAR,
+                EFFECTIVE_START_DATE DATE,
+                EFFECTIVE_END_DATE DATE,
+                SOURCE_SYSTEM VARCHAR(100),
+                SOURCE_REFERENCE VARCHAR(1000),
+                SOURCE_UPDATED_AT TIMESTAMP_NTZ,
+                LOAD_BATCH_ID VARCHAR(100),
+                RECORD_HASH VARCHAR(64),
+                INGESTED_AT TIMESTAMP_NTZ DEFAULT CURRENT_TIMESTAMP()
+            )
+        ]]></sql>
+        <rollback><sql>DROP TABLE IF EXISTS ${databaseName}.STAGING.STG_POLICY</sql></rollback>
+    </changeSet>
+
+    <changeSet id="002-02-create-stg-bill-line" author="edward">
+        <sql><![CDATA[
+            CREATE TRANSIENT TABLE IF NOT EXISTS ${databaseName}.STAGING.STG_BILL_LINE (
+                BILL_LINE_ID VARCHAR(100) NOT NULL,
+                BILL_ID VARCHAR(100) NOT NULL,
+                BILLING_ACCOUNT_TOKEN VARCHAR(256) NOT NULL,
+                PRODUCT_ID VARCHAR(100),
+                SERVICE_ID VARCHAR(100),
+                CHARGE_TYPE_CODE VARCHAR(100),
+                BILLING_CYCLE_START DATE,
+                BILLING_CYCLE_END DATE,
+                CHARGE_DATE DATE,
+                QUANTITY NUMBER(18,4),
+                UNIT_PRICE NUMBER(18,4),
+                CHARGE_AMOUNT NUMBER(18,2),
+                TAX_AMOUNT NUMBER(18,2),
+                CREDIT_AMOUNT NUMBER(18,2),
+                NET_AMOUNT NUMBER(18,2),
+                CURRENCY_CODE VARCHAR(3),
+                CHARGE_STATUS VARCHAR(50),
+                SOURCE_SYSTEM VARCHAR(100),
+                SOURCE_UPDATED_AT TIMESTAMP_NTZ,
+                LOAD_BATCH_ID VARCHAR(100),
+                RECORD_HASH VARCHAR(64),
+                INGESTED_AT TIMESTAMP_NTZ DEFAULT CURRENT_TIMESTAMP()
+            )
+        ]]></sql>
+        <rollback><sql>DROP TABLE IF EXISTS ${databaseName}.STAGING.STG_BILL_LINE</sql></rollback>
+    </changeSet>
+</databaseChangeLog>

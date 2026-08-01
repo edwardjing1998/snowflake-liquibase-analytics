@@ -1,0 +1,80 @@
+name: Deploy Snowflake Analytical Objects
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "pom.xml"
+      - "src/main/resources/db/changelog/**"
+      - ".github/workflows/deploy-snowflake.yml"
+
+concurrency:
+  group: snowflake-analytics-staging
+  cancel-in-progress: false
+
+jobs:
+  validate-preview-deploy:
+    runs-on: ubuntu-latest
+    environment: snowflake-staging
+    permissions:
+      contents: read
+
+    env:
+      SNOWFLAKE_ACCOUNT: ${{ vars.SNOWFLAKE_ACCOUNT }}
+      SNOWFLAKE_DATABASE: ${{ vars.SNOWFLAKE_DATABASE }}
+      SNOWFLAKE_WAREHOUSE: ${{ vars.SNOWFLAKE_WAREHOUSE }}
+      SNOWFLAKE_ROLE: ${{ vars.SNOWFLAKE_ROLE }}
+      SNOWFLAKE_CHANGELOG_SCHEMA: ${{ vars.SNOWFLAKE_CHANGELOG_SCHEMA }}
+      SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER }}
+      SNOWFLAKE_PASSWORD: ${{ secrets.SNOWFLAKE_PASSWORD }}
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v5
+
+      - name: Set up Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+
+      - name: Verify configuration
+        shell: bash
+        run: |
+          for variable in \
+            SNOWFLAKE_ACCOUNT \
+            SNOWFLAKE_DATABASE \
+            SNOWFLAKE_WAREHOUSE \
+            SNOWFLAKE_ROLE \
+            SNOWFLAKE_CHANGELOG_SCHEMA \
+            SNOWFLAKE_USER \
+            SNOWFLAKE_PASSWORD
+          do
+            test -n "${!variable}" || {
+              echo "$variable is missing"
+              exit 1
+            }
+          done
+
+      - name: Validate Liquibase changelog
+        run: mvn --batch-mode liquibase:validate
+
+      - name: Generate deployment SQL preview
+        run: >-
+          mvn --batch-mode liquibase:updateSQL
+          -Dliquibase.outputFile=target/liquibase-update.sql
+
+      - name: Save deployment SQL preview
+        uses: actions/upload-artifact@v4
+        with:
+          name: snowflake-liquibase-update-sql
+          path: target/liquibase-update.sql
+          if-no-files-found: error
+
+      - name: Apply pending changesets
+        run: mvn --batch-mode liquibase:update
+
+      - name: Show Liquibase deployment status
+        run: mvn --batch-mode liquibase:status -Dliquibase.verbose=true
