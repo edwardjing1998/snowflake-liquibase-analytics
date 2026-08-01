@@ -22,18 +22,51 @@
                 <artifactId>liquibase-maven-plugin</artifactId>
                 <version>${liquibase.version}</version>
                 <configuration>
-                    <changeLogFile>src/main/resources/db/changelog/db.changelog-master.xml</changeLogFile>
-                    <driver>net.snowflake.client.jdbc.SnowflakeDriver</driver>
-                    <url>jdbc:snowflake://${env.SNOWFLAKE_ACCOUNT}.snowflakecomputing.com/?db=${env.SNOWFLAKE_DATABASE}&amp;schema=${env.SNOWFLAKE_CHANGELOG_SCHEMA}&amp;warehouse=${env.SNOWFLAKE_WAREHOUSE}&amp;role=${env.SNOWFLAKE_ROLE}</url>
+                    <changeLogFile>
+                        src/main/resources/db/changelog/db.changelog-master.xml
+                    </changeLogFile>
+
+                    <driver>
+                        net.snowflake.client.jdbc.SnowflakeDriver
+                    </driver>
+
+                    <url>
+                        jdbc:snowflake://${env.SNOWFLAKE_ACCOUNT}.snowflakecomputing.com/?db=${env.SNOWFLAKE_DATABASE}&amp;schema=${env.SNOWFLAKE_CHANGELOG_SCHEMA}&amp;warehouse=${env.SNOWFLAKE_WAREHOUSE}&amp;role=${env.SNOWFLAKE_ROLE}
+                    </url>
+
                     <username>${env.SNOWFLAKE_USER}</username>
                     <password>${env.SNOWFLAKE_PASSWORD}</password>
-                    <defaultSchemaName>${env.SNOWFLAKE_CHANGELOG_SCHEMA}</defaultSchemaName>
-                    <liquibaseSchemaName>${env.SNOWFLAKE_CHANGELOG_SCHEMA}</liquibaseSchemaName>
-                    <databaseChangeLogTableName>DATABASECHANGELOG</databaseChangeLogTableName>
-                    <databaseChangeLogLockTableName>DATABASECHANGELOGLOCK</databaseChangeLogLockTableName>
+
+                    <defaultCatalogName>
+                        ${env.SNOWFLAKE_DATABASE}
+                    </defaultCatalogName>
+
+                    <defaultSchemaName>
+                        ${env.SNOWFLAKE_CHANGELOG_SCHEMA}
+                    </defaultSchemaName>
+
+                    <changelogCatalogName>
+                        ${env.SNOWFLAKE_DATABASE}
+                    </changelogCatalogName>
+
+                    <changelogSchemaName>
+                        ${env.SNOWFLAKE_CHANGELOG_SCHEMA}
+                    </changelogSchemaName>
+
+                    <databaseChangeLogTableName>
+                        DATABASECHANGELOG
+                    </databaseChangeLogTableName>
+
+                    <databaseChangeLogLockTableName>
+                        DATABASECHANGELOGLOCK
+                    </databaseChangeLogLockTableName>
+
                     <expressionVariables>
-                        <databaseName>${env.SNOWFLAKE_DATABASE}</databaseName>
+                        <databaseName>
+                            ${env.SNOWFLAKE_DATABASE}
+                        </databaseName>
                     </expressionVariables>
+
                     <promptOnNonLocalDatabase>false</promptOnNonLocalDatabase>
                     <logLevel>info</logLevel>
                 </configuration>
