@@ -2,8 +2,10 @@ name: Deploy Snowflake Analytical Objects
 
 on:
   workflow_dispatch:
+
   push:
-    branches: [main]
+    branches:
+      - main
     paths:
       - "pom.xml"
       - "src/main/resources/db/changelog/**"
@@ -17,6 +19,7 @@ jobs:
   validate-preview-deploy:
     runs-on: ubuntu-latest
     environment: snowflake-staging
+
     permissions:
       contents: read
 
@@ -59,12 +62,34 @@ jobs:
           done
 
       - name: Validate Liquibase changelog
-        run: mvn --batch-mode liquibase:validate
+        run: |
+          mvn --batch-mode liquibase:validate
+
+      - name: Show pending changesets
+        run: |
+          mvn --batch-mode liquibase:status \
+            -Dliquibase.verbose=true
 
       - name: Generate deployment SQL preview
-        run: >-
-          mvn --batch-mode liquibase:updateSQL
-          -Dliquibase.outputFile=target/liquibase-update.sql
+        run: |
+          mkdir -p target
+
+          mvn --batch-mode liquibase:updateSQL \
+            -Dliquibase.migrationSqlOutputFile=target/liquibase-update.sql
+
+      - name: Verify generated SQL preview
+        run: |
+          test -s target/liquibase-update.sql || {
+            echo "Liquibase SQL preview was not generated"
+            find target -maxdepth 3 -type f -print
+            exit 1
+          }
+
+          echo "Generated SQL preview:"
+          ls -lh target/liquibase-update.sql
+
+          echo "Preview line count:"
+          wc -l target/liquibase-update.sql
 
       - name: Save deployment SQL preview
         uses: actions/upload-artifact@v4
@@ -72,9 +97,17 @@ jobs:
           name: snowflake-liquibase-update-sql
           path: target/liquibase-update.sql
           if-no-files-found: error
+          retention-days: 14
 
       - name: Apply pending changesets
-        run: mvn --batch-mode liquibase:update
+        run: |
+          mvn --batch-mode liquibase:update
 
       - name: Show Liquibase deployment status
-        run: mvn --batch-mode liquibase:status -Dliquibase.verbose=true
+        run: |
+          mvn --batch-mode liquibase:status \
+            -Dliquibase.verbose=true
+
+      - name: Show Liquibase deployment history
+        run: |
+          mvn --batch-mode liquibase:history
